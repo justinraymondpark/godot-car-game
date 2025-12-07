@@ -42,10 +42,11 @@ func _ready() -> void:
 		print("Track texture fixer DISABLED")
 		return
 	
-	# Detect platform
+	# Detect platform or mobile renderer
 	is_web_platform = OS.get_name() == "Web"
+	var is_mobile_renderer = ProjectSettings.get_setting("rendering/renderer/rendering_method") == "mobile" or ProjectSettings.get_setting("rendering/renderer/rendering_method") == "gl_compatibility"
 	
-	if is_web_platform or use_web_shader:
+	if is_web_platform or is_mobile_renderer or use_web_shader:
 		depth_fix_shader = preload("res://assets/tracks/road_depth_fix_web.gdshader")
 		print("Using WEB shader (Platform: ", OS.get_name(), ", Force Web: ", use_web_shader, ")")
 	else:

@@ -261,6 +261,7 @@ draw_pass_1 = SubResource("QuadMesh_u7ljy")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.22381, 4.41207)
 top_level = true
 current = true
+far = 10000.0
 script = ExtResource("6_krgom")
 
 [node name="PinJoint3D" type="Generic6DOFJoint3D" parent="."]

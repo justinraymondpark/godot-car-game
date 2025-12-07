@@ -20,8 +20,9 @@ uniform bool has_roughness_texture = false;
 // Wrap mode: 0 = repeat, 1 = mirror, 2 = clamp
 uniform int wrap_mode : hint_range(0, 2) = 1;
 
-// Depth bias - push surfaces toward camera to prevent z-fighting
-uniform float depth_bias : hint_range(0.0, 0.01) = 0.001;
+// DEPTH OFFSET - negative values push geometry "closer" to camera
+// This helps prevent z-fighting with distant geometry
+uniform float depth_offset : hint_range(-0.05, 0.05) = -0.0005;
 
 vec2 apply_wrap_mode(vec2 uv) {
 	if (wrap_mode == 1) {
@@ -36,6 +37,14 @@ vec2 apply_wrap_mode(vec2 uv) {
 	return uv;
 }
 
+void vertex() {
+	// Apply depth offset in View Space
+	// VERTEX is the position in view space (camera is at 0,0,0)
+	// normalize(VERTEX) points from camera to vertex
+	// Adding a negative offset times this direction pulls the vertex towards the camera
+	VERTEX += normalize(VERTEX) * depth_offset;
+}
+
 void fragment() {
 	vec2 uv = apply_wrap_mode(UV);
 	
@@ -44,6 +53,7 @@ void fragment() {
 		vec4 tex_color = texture(albedo_texture, uv);
 		ALBEDO = tex_color.rgb * albedo_color.rgb;
 		ALPHA = tex_color.a * albedo_color.a;
+		ALPHA_SCISSOR_THRESHOLD = 0.5;
 	} else {
 		ALBEDO = albedo_color.rgb;
 		ALPHA = albedo_color.a;
@@ -65,8 +75,4 @@ void fragment() {
 	
 	// Metallic
 	METALLIC = metallic;
-	
-	// Apply depth bias - subtract from depth to push toward camera
-	// This helps foreground win over background in z-fighting situations
-	DEPTH = FRAGCOORD.z - depth_bias;
 }

@@ -7,6 +7,12 @@ extends Node
 ## TOGGLE THIS IN INSPECTOR TO ENABLE/DISABLE THE SHADER
 @export var enable_shader_fix := true
 
+## USE WEB SHADER - Auto-detects web platform, or can force ON
+@export var use_web_shader := false
+
+# Auto-detect web platform
+var is_web_platform := false
+
 # Textures that need MIRRORED wrap mode (wrap_mode = 1)
 const MIRROR_TEXTURES := [
 	"texture_548",
@@ -31,12 +37,20 @@ var depth_fixed_count := 0
 
 
 func _ready() -> void:
+	print("=== TRACK TEXTURE FIXER V10 ===")
 	if not enable_shader_fix:
-		print("Track texture fixer DISABLED - toggle enable_shader_fix in inspector")
+		print("Track texture fixer DISABLED")
 		return
 	
-	# Load the custom shader with depth fix
-	depth_fix_shader = preload("res://assets/tracks/road_depth_fix.gdshader")
+	# Detect platform
+	is_web_platform = OS.get_name() == "Web"
+	
+	if is_web_platform or use_web_shader:
+		depth_fix_shader = preload("res://assets/tracks/road_depth_fix_web.gdshader")
+		print("Using WEB shader (Platform: ", OS.get_name(), ", Force Web: ", use_web_shader, ")")
+	else:
+		depth_fix_shader = preload("res://assets/tracks/road_depth_fix.gdshader")
+		print("Using DESKTOP shader (Platform: ", OS.get_name(), ")")
 	
 	# Fix all materials in this node and children
 	fix_texture_wrap_modes(self)
